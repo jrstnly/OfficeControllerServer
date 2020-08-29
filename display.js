@@ -62,14 +62,14 @@ common.calibrateTop = () => {
 	return new Promise((resolve) => {
 		let limit = 0;
 		let limitCount = 0;
-		move('up');
+		common.move('up');
 		let counter = setInterval(() => {
 			if (limit === displayHeight) {
 				if (limitCount >= 4) {
 					console.log("Top limit reached");
 					displayMaxHeight = displayHeight - 2;
 					clearInterval(counter);
-					stop();
+					common.stop();
 					resolve();
 				} else {
 					limitCount++;
@@ -85,14 +85,14 @@ common.calibrateBottom = () => {
 	return new Promise((resolve) => {
 		let limit = 0;
 		let limitCount = 0;
-		move('down');
+		common.move('down');
 		let counter = setInterval(() => {
 			if (limit === displayHeight) {
 				if (limitCount >= 4) {
 					console.log("Bottom limit reached");
 					displayMinHeight = displayHeight + 2;
 					clearInterval(counter);
-					stop();
+					common.stop();
 					resolve();
 				} else {
 					limitCount++;
