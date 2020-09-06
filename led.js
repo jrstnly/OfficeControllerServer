@@ -59,8 +59,9 @@ const makePwmDriver = (options) => {
 			*/
 		});
 	}
-/*
+
 	const setPWMFreq = freq => {
+		/*
 		// "Sets the PWM frequency"
 		let prescaleval = 25000000.0 // 25MHz
 		prescaleval /= 4096.0 // 12-bit
@@ -89,8 +90,9 @@ const makePwmDriver = (options) => {
 	        usleep(5000)
 	          .then(x => i2c.writeBytes(MODE1, oldmode | 0x80))
 	      })
+		  */
 	  }
-*/
+
 	// Sets a single PWM channel
 	const setPWM = (channel, on, off) => {
 		if (debug) {
