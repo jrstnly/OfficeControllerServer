@@ -1,4 +1,4 @@
-const i2c = require('i2c-bus');
+const i2cBus = require('i2c-bus');
 const NanoTimer = require('nanotimer');
 
 const makePwmDriver = (options) => {
@@ -31,7 +31,7 @@ const makePwmDriver = (options) => {
 		debug: false
 	}
 	const {address, device, debug} = Object.assign({}, defaults, options)
-	const i2c = i2c.openSync(device);
+	const i2c = i2cBus.openSync(device);
 	let prescale
 
 	const init = () => {
