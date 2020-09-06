@@ -2,12 +2,21 @@ const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const display = require('./display');
+const led = require('./led');
 
 app.get('/', function(req, res){
-  res.send('<h1>Office Controller Server</h1>');
+	res.send('<h1>Office Controller Server</h1>');
 });
 http.listen(3000, function(){
-  console.log('Listening on *:3000');
+	console.log('Listening on *:3000');
+});
+
+io.on('connection', function(clientSocket){
+	console.log('a user connected');
+
+	clientSocket.on('disconnect', function(){
+		console.log('user disconnected');
+	});
 });
 
 const calibrate = async () => {
@@ -16,4 +25,6 @@ const calibrate = async () => {
 	console.log("Calibration complete");
 };
 
-calibrate();
+const pwmDriver = makePwmDriver();
+
+//calibrate();
