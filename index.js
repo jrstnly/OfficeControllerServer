@@ -2,7 +2,7 @@ const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const display = require('./display');
-const led = require('./led');
+const makePwmDriver = require('./led');
 
 app.get('/', function(req, res){
 	res.send('<h1>Office Controller Server</h1>');
