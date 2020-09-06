@@ -27,7 +27,7 @@ const makePwmDriver = (options) => {
 
 	const defaults = {
 		address: 0x40,
-		device: 0,
+		device: 1,
 		debug: false
 	}
 	const {address, device, debug} = Object.assign({}, defaults, options)
