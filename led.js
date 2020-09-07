@@ -41,12 +41,15 @@ const makePwmDriver = (options) => {
 		}
 
 		setAllPWM(0, 0)
-		i2c.writeWordSync(address, MODE2, OUTDRV);
-		i2c.writeWordSync(address, MODE1, ALLCALL)
+		i2c.i2cWriteSync(MODE2, Buffer.from([OUTDRV]));
+		i2c.i2cWriteSync(MODE1, Buffer.from([ALLCALL]));
 		usleep(5000).then((x) =>  {
-			let mode1 = i2c.readWordSync(address, MODE1);
+			const rbuf = Buffer.alloc(1);
+			//let mode1 = i2c.readWordSync(address, MODE1);
+			let mode1 = i2c.i2cReadSync(MODE1, rbuf.length, rbuf);
 			mode1 = mode1 & ~SLEEP // wake up (reset sleep)
-			i2c.writeWordSync(address, MODE1, mode1);
+			//i2c.writeWordSync(address, MODE1, mode1);
+			i2c.i2cWriteSync(MODE1, Buffer.from([mode1]));
 			/*
 			i2c.readBytes(MODE1, 1)
 			.then((mode1) => {
