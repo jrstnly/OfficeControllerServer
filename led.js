@@ -50,7 +50,7 @@ const makePwmDriver = (options) => {
 			mode1 = mode1 & ~SLEEP // wake up (reset sleep)
 			i2c.writeI2cBlockSync(address, MODE1, 1, Buffer.from([mode1]));
 		});
-		setAllPWM(0, 4095);
+		setAllPWM(4095, 4095);
 	}
 
 	const setPWMFreq = freq => {
@@ -98,10 +98,10 @@ const makePwmDriver = (options) => {
 	  }
 
 	const setAllPWM = (on, off) => {
-		i2c.writeI2cBlockSync(address, ALL_LED_ON_L, 1, on & 0xFF);
-		i2c.writeI2cBlockSync(address, ALL_LED_ON_H, 1, on >> 8);
-		i2c.writeI2cBlockSync(address, ALL_LED_OFF_L, 1, off & 0xFF);
-		i2c.writeI2cBlockSync(address, ALL_LED_OFF_H, 1, off >> 8);
+		i2c.writeI2cBlockSync(address, ALL_LED_ON_L, 1, Buffer.from([(on & 0xFF)]));
+		i2c.writeI2cBlockSync(address, ALL_LED_ON_H, 1, Buffer.from([(on >> 8)]));
+		i2c.writeI2cBlockSync(address, ALL_LED_OFF_L, 1, Buffer.from([(off & 0xFF)]));
+		i2c.writeI2cBlockSync(address, ALL_LED_OFF_H, 1, Buffer.from([(off >> 8)]));
 	}
 
 	const stop = () => i2c.writeWordSync(address, ALL_LED_OFF_H, 0x01);
