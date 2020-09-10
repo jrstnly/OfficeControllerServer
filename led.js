@@ -49,17 +49,8 @@ const makePwmDriver = (options) => {
 			let mode1 = rbuf.toString('hex');
 			mode1 = mode1 & ~SLEEP // wake up (reset sleep)
 			i2c.writeI2cBlockSync(address, MODE1, 1, Buffer.from([mode1]));
-			/*
-			i2c.readBytes(MODE1, 1)
-			.then((mode1) => {
-				mode1 = mode1 & ~SLEEP // wake up (reset sleep)
-				return i2c.writeBytes(MODE1, mode1)
-			})
-			.then(usleep(5000)) // wait for oscillator)
-			.then(x => debug ? console.log('init done ') : '')
-			.catch(e => console.error('error in init', e))
-			*/
 		});
+		setAllPWM(0, 4095);
 	}
 
 	const setPWMFreq = freq => {
