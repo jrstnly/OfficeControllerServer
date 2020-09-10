@@ -40,16 +40,15 @@ const makePwmDriver = (options) => {
 			console.log(`Reseting PCA9685, mode1: ${MODE1}`);
 		}
 
-		setAllPWM(0, 0)
-		i2c.i2cWriteSync(MODE2, Buffer.from([OUTDRV]));
-		i2c.i2cWriteSync(MODE1, Buffer.from([ALLCALL]));
+		setAllPWM(0, 0);
+		i2c.writeI2cBlockSync(address, MODE2, 1, Buffer.from([OUTDRV]));
+		i2c.writeI2cBlockSync(address, MODE1, 1, Buffer.from([ALLCALL]));
 		usleep(5000).then((x) =>  {
 			const rbuf = Buffer.alloc(1);
-			//let mode1 = i2c.readWordSync(address, MODE1);
-			let mode1 = i2c.i2cReadSync(MODE1, rbuf.length, rbuf);
+			i2c.readI2cBlockSync(0x40, MODE1, rbuf.length, rbuf);
+			let mode1 = rbuf.toString('hex');
 			mode1 = mode1 & ~SLEEP // wake up (reset sleep)
-			//i2c.writeWordSync(address, MODE1, mode1);
-			i2c.i2cWriteSync(MODE1, Buffer.from([mode1]));
+			i2c.writeI2cBlockSync(address, MODE1, 1, Buffer.from([mode1]));
 			/*
 			i2c.readBytes(MODE1, 1)
 			.then((mode1) => {
