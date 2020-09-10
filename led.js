@@ -98,10 +98,10 @@ const makePwmDriver = (options) => {
 	  }
 
 	const setAllPWM = (on, off) => {
-		i2c.writeWordSync(address, ALL_LED_ON_L, on & 0xFF)
-		i2c.writeWordSync(address, ALL_LED_ON_H, on >> 8)
-		i2c.writeWordSync(address, ALL_LED_OFF_L, off & 0xFF)
-		i2c.writeWordSync(address, ALL_LED_OFF_H, off >> 8)
+		i2c.writeI2cBlockSync(address, ALL_LED_ON_L, 1, on & 0xFF);
+		i2c.writeI2cBlockSync(address, ALL_LED_ON_H, 1, on >> 8);
+		i2c.writeI2cBlockSync(address, ALL_LED_OFF_L, 1, off & 0xFF);
+		i2c.writeI2cBlockSync(address, ALL_LED_OFF_H, 1, off >> 8);
 	}
 
 	const stop = () => i2c.writeWordSync(address, ALL_LED_OFF_H, 0x01);
