@@ -42,17 +42,15 @@ const makePwmDriver = (options) => {
 			}
 			//await setAllPWM(0, 0);
 			const i2c1 = await i2c.openPromisified(1)
-			await i2c1.i2cWrite(address, 1, Buffer.from([SWRST]));
-			await i2c1.writeI2cBlock(address, MODE1, 1, Buffer.from([MODE1]));
+			await i2c1.sendByte(MODE1, SWRST);
+			await i2c1.writeByte(address, MODE1, MODE1);
 
-			await i2c1.writeI2cBlock(address, MODE2, 1, Buffer.from([OUTDRV]));
-			await i2c1.writeI2cBlock(address, MODE1, 1, Buffer.from([ALLCALL]));
+			await i2c1.writeByte(address, MODE2, OUTDRV);
+			await i2c1.writeByte(address, MODE1, ALLCALL);
 			await usleep(5000);
-			const rbuf = Buffer.alloc(1);
-			await i2c1.readI2cBlock(address, MODE1, rbuf.length, rbuf)
-			let mode1 = rbuf.toString('hex');
+			let mode1 = await i2c1.readByte(address, MODE1);
 			mode1 = mode1 & ~SLEEP // wake up (reset sleep)
-			await i2c1.writeI2cBlock(address, MODE1, 1, Buffer.from([mode1]));
+			await i2c1.writeByte(address, MODE1, mode1);
 			await usleep(5000);
 			if (debug) console.log('Init complete');
 			await i2c1.close();
@@ -139,10 +137,10 @@ const makePwmDriver = (options) => {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const i2c1 = await i2c.openPromisified(1);
-				await i2c1.writeI2cBlock(address, ALL_LED_ON_L, 1, Buffer.from([(on & 0xFF)]));
-				await i2c1.writeI2cBlock(address, ALL_LED_ON_H, 1, Buffer.from([(on >> 8)]));
-				await i2c1.writeI2cBlock(address, ALL_LED_OFF_L, 1, Buffer.from([(off & 0xFF)]));
-				await i2c1.writeI2cBlock(address, ALL_LED_OFF_H, 1, Buffer.from([(off >> 8)]));
+				await i2c1.writeByte(address, ALL_LED_ON_L, on & 0xFF);
+				await i2c1.writeByte(address, ALL_LED_ON_H, on >> 8);
+				await i2c1.writeByte(address, ALL_LED_OFF_L, off & 0xFF);
+				await i2c1.writeByte(address, ALL_LED_OFF_H, off >> 8);
 				await i2c1.close();
 				resolve();
 			} catch(e) {
