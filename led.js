@@ -1,4 +1,4 @@
-const i2cBus = require('i2c-bus');
+const i2c = require('i2c-bus');
 const NanoTimer = require('nanotimer');
 
 const makePwmDriver = (options) => {
@@ -31,26 +31,36 @@ const makePwmDriver = (options) => {
 		debug: false
 	}
 	const {address, device, debug} = Object.assign({}, defaults, options)
-	const i2c = i2cBus.openSync(device);
 	let prescale
 
-	const init = () => {
+	const init = async () => {
 		if (debug) {
 			console.log(`device //{device}, adress:${address}, debug:${debug}`);
 			console.log(`Reseting PCA9685, mode1: ${MODE1}`);
 		}
-
-		setAllPWM(0, 0);
-		i2c.writeI2cBlockSync(address, MODE2, 1, Buffer.from([OUTDRV]));
-		i2c.writeI2cBlockSync(address, MODE1, 1, Buffer.from([ALLCALL]));
-		usleep(5000).then((x) =>  {
-			const rbuf = Buffer.alloc(1);
-			i2c.readI2cBlockSync(0x40, MODE1, rbuf.length, rbuf);
-			let mode1 = rbuf.toString('hex');
-			mode1 = mode1 & ~SLEEP // wake up (reset sleep)
-			i2c.writeI2cBlockSync(address, MODE1, 1, Buffer.from([mode1]));
+		await setAllPWM(0, 0);
+		await i2c.openPromisified(1).then((i2c1) => {
+			i2c1.writeI2cBlock(address, MODE2, 1, Buffer.from([OUTDRV]))
+			.then(_ => i2c1.writeI2cBlock(address, MODE1, 1, Buffer.from([ALLCALL])))
+			.then(usleep(5000))
+			.then(_ => {
+				return new Promise((resolve) => {
+					const rbuf = Buffer.alloc(1);
+					i2c1.readI2cBlock(address, MODE1, rbuf.length, rbuf).then(_ => {
+						let mode1 = rbuf.toString('hex');
+						mode1 = mode1 & ~SLEEP // wake up (reset sleep)
+						resolve(mode1);
+					});
+				});
+			})
+			.then(write => i2c1.writeI2cBlockSync(address, MODE1, 1, Buffer.from([write])))
+			.then(usleep(5000))
+			.then(x => debug ? console.log('init done ') : '')
+			.then(_ => i2c1.close())
+			.catch(e => console.error('error in init', e));
 		});
-		setAllPWM(4095, 4095);
+
+		await setAllPWM(4095, 4095);
 	}
 
 	const setPWMFreq = freq => {
@@ -98,10 +108,17 @@ const makePwmDriver = (options) => {
 	  }
 
 	const setAllPWM = (on, off) => {
-		i2c.writeI2cBlockSync(address, ALL_LED_ON_L, 1, Buffer.from([(on & 0xFF)]));
-		i2c.writeI2cBlockSync(address, ALL_LED_ON_H, 1, Buffer.from([(on >> 8)]));
-		i2c.writeI2cBlockSync(address, ALL_LED_OFF_L, 1, Buffer.from([(off & 0xFF)]));
-		i2c.writeI2cBlockSync(address, ALL_LED_OFF_H, 1, Buffer.from([(off >> 8)]));
+		return new Promise((resolve) => {
+			i2c.openPromisified(1).then((i2c1) => {
+				i2c1.writeI2cBlock(address, ALL_LED_ON_L, 1, Buffer.from([(on & 0xFF)]))
+				.then(_ => i2c1.writeI2cBlock(address, ALL_LED_ON_H, 1, Buffer.from([(on >> 8)])))
+				.then(_ => i2c1.writeI2cBlock(address, ALL_LED_OFF_L, 1, Buffer.from([(off & 0xFF)])))
+				.then(_ => i2c1.writeI2cBlock(address, ALL_LED_OFF_H, 1, Buffer.from([(off >> 8)])))
+				.then(_ => i2c1.close())
+				.then(_ => resolve())
+				.catch(console.log);
+			});
+		});
 	}
 
 	const stop = () => i2c.writeWordSync(address, ALL_LED_OFF_H, 0x01);
