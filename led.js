@@ -35,15 +35,18 @@ const makePwmDriver = (options) => {
 
 	const init = async () => {
 		if (debug) {
-			console.log(`device //{device}, adress:${address}, debug:${debug}`);
-			console.log(`Reseting PCA9685, mode1: ${MODE1}`);
+			console.log(`Device:${device}, Address:${address}, Debug:${debug}`);
+			console.log(`Resetting PCA9685, MODE1: ${MODE1}`);
 		}
 		await setAllPWM(0, 0);
 		await i2c.openPromisified(1).then((i2c1) => {
 			i2c1.writeI2cBlock(address, MODE2, 1, Buffer.from([OUTDRV]))
-			.then(_ => i2c1.writeI2cBlock(address, MODE1, 1, Buffer.from([ALLCALL])))
-			.then(usleep(5000))
 			.then(_ => {
+				if (debug) console.log('');
+				return i2c1.writeI2cBlock(address, MODE1, 1, Buffer.from([ALLCALL]))
+			}).then(_ => {
+				usleep(5000)
+			}).then(_ => {
 				return new Promise((resolve) => {
 					const rbuf = Buffer.alloc(1);
 					i2c1.readI2cBlock(address, MODE1, rbuf.length, rbuf).then(_ => {
@@ -53,9 +56,9 @@ const makePwmDriver = (options) => {
 					});
 				});
 			})
-			.then(write => i2c1.writeI2cBlockSync(address, MODE1, 1, Buffer.from([write])))
+			.then(write => i2c1.writeI2cBlock(address, MODE1, 1, Buffer.from([write])))
 			.then(usleep(5000))
-			.then(x => debug ? console.log('init done ') : '')
+			.then(x => debug ? console.log('Init complete') : '')
 			.then(_ => i2c1.close())
 			.catch(e => console.error('error in init', e));
 		});
@@ -79,6 +82,34 @@ const makePwmDriver = (options) => {
 		if (debug) {
 			console.log(`Final pre-scale: ${prescale}`)
 		}
+
+		return new Promise((resolve) => {
+			i2c.openPromisified(1).then((i2c1) => {
+				const rbuf = Buffer.alloc(1);
+				i2c1.readI2cBlock(address, MODE1, rbuf.length, rbuf)
+				.then(_ => {
+					const oldmode = data[0]
+					let newmode = (oldmode & 0x7F) | 0x10 // sleep
+					if (debug) {
+						console.log(`prescale ${Math.floor(prescale)}, newMode: newmode.toString(16)`)
+					}
+					i2c1.writeI2cBlock(address, MODE1, 1, Buffer.from([newmode]))
+					.then(_ => i2c1.writeI2cBlock(address, PRESCALE, 1, Buffer.from([prescale])))
+					.then(_ => i2c1.writeI2cBlock(address, MODE1, 1, Buffer.from([oldmode])))
+				})
+
+				i2c1.writeI2cBlock(address, ALL_LED_ON_L, 1, Buffer.from([(on & 0xFF)]))
+				.then(_ => i2c1.writeI2cBlock(address, ALL_LED_ON_H, 1, Buffer.from([(on >> 8)])))
+				.then(_ => i2c1.writeI2cBlock(address, ALL_LED_OFF_L, 1, Buffer.from([(off & 0xFF)])))
+				.then(_ => i2c1.writeI2cBlock(address, ALL_LED_OFF_H, 1, Buffer.from([(off >> 8)])))
+				.then(_ => i2c1.close())
+				.then(_ => {
+					resolve();
+					console.log("setAllPWM", on, off);
+				})
+				.catch(console.log);
+			});
+		});
 
 	    return i2c.readBytes(MODE1, 1)
 	      .then(function (data) {
@@ -110,12 +141,12 @@ const makePwmDriver = (options) => {
 	const setAllPWM = (on, off) => {
 		return new Promise((resolve) => {
 			i2c.openPromisified(1).then((i2c1) => {
-				i2c1.writeI2cBlock(address, ALL_LED_ON_L, 1, Buffer.from([(on & 0xFF)]))
-				.then(_ => i2c1.writeI2cBlock(address, ALL_LED_ON_H, 1, Buffer.from([(on >> 8)])))
-				.then(_ => i2c1.writeI2cBlock(address, ALL_LED_OFF_L, 1, Buffer.from([(off & 0xFF)])))
-				.then(_ => i2c1.writeI2cBlock(address, ALL_LED_OFF_H, 1, Buffer.from([(off >> 8)])))
+				i2c1.writeI2cBlock(address, ALL_LED_ON_L, 1, Buffer.from([(on & 0xFF),(on >> 8),(off & 0xFF),(off >> 8)]))
 				.then(_ => i2c1.close())
-				.then(_ => resolve())
+				.then(_ => {
+					resolve();
+					console.log("setAllPWM", on, off);
+				})
 				.catch(console.log);
 			});
 		});
