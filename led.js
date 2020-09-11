@@ -24,6 +24,7 @@ const makePwmDriver = (options) => {
 	const ALLCALL = 0x01
 	const INVRT = 0x10
 	const OUTDRV = 0x04
+	const SWRST = 0x06
 
 	const defaults = {
 		address: 0x40,
@@ -38,8 +39,9 @@ const makePwmDriver = (options) => {
 			console.log(`Device:${device}, Address:${address}, Debug:${debug}`);
 			console.log(`Resetting PCA9685, MODE1: ${MODE1}`);
 		}
-		await setAllPWM(0, 0);
+		//await setAllPWM(0, 0);
 		await i2c.openPromisified(1).then((i2c1) => {
+			i2c1.writeI2cBlock(address, MODE2, 1, Buffer.from([SWRST]))
 			i2c1.writeI2cBlock(address, MODE2, 1, Buffer.from([OUTDRV]))
 			.then(_ => {
 				if (debug) console.log('');
