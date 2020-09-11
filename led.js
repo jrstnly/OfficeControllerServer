@@ -141,16 +141,19 @@ const makePwmDriver = (options) => {
 	  }
 
 	const setAllPWM = (on, off) => {
-		return new Promise((resolve) => {
-			i2c.openPromisified(1).then((i2c1) => {
-				i2c1.writeI2cBlock(address, ALL_LED_ON_L, 4, Buffer.from([(on & 4095),(on >> 8),(off & 4095),(off >> 8)]))
-				.then(_ => i2c1.close())
-				.then(_ => {
-					resolve();
-					console.log("setAllPWM", on, off);
-				})
-				.catch(console.log);
-			});
+		return new Promise(async (resolve, reject) => {
+			try {
+				const i2c1 = await i2c.openPromisified(1);
+				await i2c1.writeI2cBlock(address, ALL_LED_ON_L, 1, Buffer.from([(on & 0xFF)]));
+				await i2c1.writeI2cBlock(address, ALL_LED_ON_H, 1, Buffer.from([(on >> 8)]));
+				await i2c1.writeI2cBlock(address, ALL_LED_OFF_L, 1, Buffer.from([(off & 0xFF)]));
+				await i2c1.writeI2cBlock(address, ALL_LED_OFF_H, 1, Buffer.from([(off >> 8)]));
+				await i2c1.close();
+				resolve();
+			} catch(e) {
+				console.log(e);
+				reject();
+			}
 		});
 	}
 
