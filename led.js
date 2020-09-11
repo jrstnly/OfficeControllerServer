@@ -28,7 +28,7 @@ const makePwmDriver = (options) => {
 	const defaults = {
 		address: 0x40,
 		device: 1,
-		debug: false
+		debug: true
 	}
 	const {address, device, debug} = Object.assign({}, defaults, options)
 	let prescale
@@ -141,7 +141,7 @@ const makePwmDriver = (options) => {
 	const setAllPWM = (on, off) => {
 		return new Promise((resolve) => {
 			i2c.openPromisified(1).then((i2c1) => {
-				i2c1.writeI2cBlock(address, ALL_LED_ON_L, 1, Buffer.from([(on & 0xFF),(on >> 8),(off & 0xFF),(off >> 8)]))
+				i2c1.writeI2cBlock(address, ALL_LED_ON_L, 4, Buffer.from([(on & 4095),(on >> 8),(off & 4095),(off >> 8)]))
 				.then(_ => i2c1.close())
 				.then(_ => {
 					resolve();
