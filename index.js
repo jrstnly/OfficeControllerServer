@@ -2,7 +2,7 @@ const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const display = require('./display');
-const makePwmDriver = require('./led');
+const ledDriver = require('./led');
 
 app.get('/', function(req, res){
 	res.send('<h1>Office Controller Server</h1>');
@@ -25,6 +25,6 @@ const calibrate = async () => {
 	console.log("Calibration complete");
 };
 
-const pwmDriver = makePwmDriver();
+const pwmDriver = ledDriver();
 
 //calibrate();
