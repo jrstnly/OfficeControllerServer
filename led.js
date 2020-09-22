@@ -5,19 +5,23 @@ const ledDriver = () => {
 	const options = { i2c: i2cBus.openSync(1), address: 0x40, frequency: 500, debug: true };
 
 	const init = async () => {
-		const pwm = new Pca9685Driver(options, (err) => {
-			if (err) {
-				console.error("Error initializing PCA9685");
-				process.exit(-1);
-			}
-			console.log("Initialization done");
-		});
-		pwm.setPulseRange(0, 0, 4095, (err) => {
-			if (err) {
-				console.error("Error setting pulse range.");
-			} else {
-				console.log("Pulse range set.");
-			}
+		new Promise((resolve) => {
+			const pwm = new Pca9685Driver(options, (err) => {
+				if (err) {
+					console.error("Error initializing PCA9685");
+					process.exit(-1);
+				}
+				console.log("Initialization done");
+				resolve();
+			});
+		}).then(() => {
+			pwm.setPulseRange(0, 0, 4095, (err) => {
+				if (err) {
+					console.error("Error setting pulse range.");
+				} else {
+					console.log("Pulse range set.");
+				}
+			});
 		});
 	}
 
