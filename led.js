@@ -12,9 +12,9 @@ const ledDriver = () => {
 					process.exit(-1);
 				}
 				console.log("Initialization done");
-				resolve();
+				resolve(pwm);
 			});
-		}).then(() => {
+		}).then((pwm) => {
 			pwm.setPulseRange(0, 0, 4095, (err) => {
 				if (err) {
 					console.error("Error setting pulse range.");
