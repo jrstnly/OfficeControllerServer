@@ -29,24 +29,27 @@ class DisplayController {
 			displayTiltDownGpio.digitalWrite(0);
 			displaySensorTrigger.digitalWrite(0);
 
-			this.accelerometer = new Accelerometer({controller: "LIS3DH"});
+			board.on('ready', () => {
+				this.accelerometer = new Accelerometer({controller: "LIS3DH"});
 
-			this.accelerometer.on("change", () => {
-				const {acceleration, inclination, orientation, pitch, roll, x, y, z} = this.accelerometer;
-				/*
-				console.log("Accelerometer:");
-				console.log("  x            : ", x);
-				console.log("  y            : ", y);
-				console.log("  z            : ", z);
-				console.log("  pitch        : ", pitch);
-				console.log("  roll         : ", roll);
-				console.log("  acceleration : ", acceleration);
-				console.log("  inclination  : ", inclination);
-				console.log("  orientation  : ", orientation);
-				console.log("--------------------------------------");
-				*/
+				this.accelerometer.on("change", () => {
+					const {acceleration, inclination, orientation, pitch, roll, x, y, z} = this.accelerometer;
+					/*
+					console.log("Accelerometer:");
+					console.log("  x            : ", x);
+					console.log("  y            : ", y);
+					console.log("  z            : ", z);
+					console.log("  pitch        : ", pitch);
+					console.log("  roll         : ", roll);
+					console.log("  acceleration : ", acceleration);
+					console.log("  inclination  : ", inclination);
+					console.log("  orientation  : ", orientation);
+					console.log("--------------------------------------");
+					*/
+				});
+
+				resolve();
 			});
-
 
 			let startTick;
 			displaySensorEcho.on('alert', (level, tick) => {
