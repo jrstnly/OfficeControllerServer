@@ -31,16 +31,24 @@ class DisplayController {
 
 			board.on('ready', () => {
 				this.accelerometer = new Accelerometer({controller: "LIS3DH"});
-
+				let oldX = 100;
+				let oldY = 100;
+				let oldZ = 100;
 				this.accelerometer.on("change", () => {
 					const {acceleration, inclination, orientation, pitch, roll, x, y, z} = this.accelerometer;
 
-					console.log("Accelerometer:");
-					console.log("  x            : ", x);
-					console.log("  y            : ", y);
-					console.log("  z            : ", z);
-					console.log("--------------------------------------");
-					
+					if (Math.abs(x - oldX) >= 0.02 || Math.abs(y - oldY) >= 0.02 || Math.abs(z - oldZ) >= 0.02) {
+						console.log("Accelerometer:");
+						console.log("  x            : ", x);
+						console.log("  y            : ", y);
+						console.log("  z            : ", z);
+						console.log("--------------------------------------");
+
+						oldX = x;
+						oldY = y;
+						oldZ = z;
+					}
+
 				});
 
 				resolve(this);
