@@ -33,6 +33,7 @@ class DisplayController {
 
 			this.accelerometer.on("change", () => {
 				const {acceleration, inclination, orientation, pitch, roll, x, y, z} = this.accelerometer;
+				/*
 				console.log("Accelerometer:");
 				console.log("  x            : ", x);
 				console.log("  y            : ", y);
@@ -43,6 +44,7 @@ class DisplayController {
 				console.log("  inclination  : ", inclination);
 				console.log("  orientation  : ", orientation);
 				console.log("--------------------------------------");
+				*/
 			});
 
 
