@@ -48,7 +48,7 @@ class DisplayController {
 					*/
 				});
 
-				resolve();
+				resolve(this);
 			});
 
 			let startTick;
