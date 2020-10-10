@@ -37,7 +37,7 @@ class DisplayController {
 				this.accelerometer.on("change", () => {
 					const {acceleration, inclination, orientation, pitch, roll, x, y, z} = this.accelerometer;
 
-					if (Math.abs(x - oldX) >= 0.02 || Math.abs(y - oldY) >= 0.02 || Math.abs(z - oldZ) >= 0.02) {
+					if (Math.abs(x - oldX) >= 0.2 || Math.abs(y - oldY) >= 0.2 || Math.abs(z - oldZ) >= 0.2) {
 						console.log("Accelerometer:");
 						console.log("  x            : ", x);
 						console.log("  y            : ", y);
@@ -72,6 +72,8 @@ class DisplayController {
 	stop() {
 		displayUpGpio.digitalWrite(0);
 		displayDownGpio.digitalWrite(0);
+		displayTiltDownGpio.digitalWrite(0);
+		displayTiltUpGpio.digitalWrite(0);
 		this.stopMeasuringHeight();
 	};
 	move(direction) {
@@ -93,6 +95,10 @@ class DisplayController {
 		if (direction === 'down') {
 			displayTiltUpGpio.digitalWrite(0);
 			displayTiltDownGpio.digitalWrite(1);
+		}
+		if (direction === 'stop') {
+			displayTiltUpGpio.digitalWrite(0);
+			displayTiltDownGpio.digitalWrite(0);
 		}
 	};
 
