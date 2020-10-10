@@ -1,5 +1,7 @@
 const { Accelerometer, Board } = require("johnny-five");
 const gpio = require('pigpio').Gpio;
+const i2cBus = require('i2c-bus');
+const Pca9685Driver = require("pca9685").Pca9685Driver;
 const Raspi = require('raspi-io').RaspiIO;
 const board = new Board({
 	io: new Raspi()
@@ -9,8 +11,6 @@ const MICROSECDONDS_PER_CM = 1e6/34321;
 
 const displayUpGpio = new gpio(20, {mode: gpio.OUTPUT});
 const displayDownGpio = new gpio(21, {mode: gpio.OUTPUT});
-const displayTiltUpGpio = new gpio(6, {mode: gpio.OUTPUT});
-const displayTiltDownGpio = new gpio(13, {mode: gpio.OUTPUT});
 const displaySensorTrigger = new gpio(22, {mode: gpio.OUTPUT});
 const displaySensorEcho = new gpio(23, {mode: gpio.INPUT, alert: true});
 
@@ -20,16 +20,27 @@ class DisplayController {
 	displayHeight = 0;
 	displayHeightInterval;
 	accelerometer;
+	pwm = null;
+	options = { i2c: i2cBus.openSync(1), address: 0x40, frequency: 800, debug: false };
 
 	constructor() {
 		return new Promise((resolve) => {
 			displayUpGpio.digitalWrite(0);
 			displayDownGpio.digitalWrite(0);
-			displayTiltUpGpio.digitalWrite(0);
-			displayTiltDownGpio.digitalWrite(0);
 			displaySensorTrigger.digitalWrite(0);
 
-			board.on('ready', () => {
+			board.on('ready', async () => {
+				await new Promise((resolve) => {
+					this.pwm = new Pca9685Driver(this.options, (err) => {
+						if (err) {
+							console.error("Error initializing PCA9685");
+							process.exit(-1);
+						}
+						console.log("Initialization done");
+						resolve();
+					});
+				});
+
 				this.accelerometer = new Accelerometer({controller: "LIS3DH"});
 				let oldX = 100;
 				let oldY = 100;
@@ -72,8 +83,6 @@ class DisplayController {
 	stop() {
 		displayUpGpio.digitalWrite(0);
 		displayDownGpio.digitalWrite(0);
-		displayTiltDownGpio.digitalWrite(0);
-		displayTiltUpGpio.digitalWrite(0);
 		this.stopMeasuringHeight();
 	};
 	move(direction) {
@@ -89,16 +98,28 @@ class DisplayController {
 	};
 	tilt(direction) {
 		if (direction === 'up') {
-			displayTiltDownGpio.digitalWrite(0);
-			displayTiltUpGpio.digitalWrite(1);
+			this.pwm.setPulseRange(13, 0, 0, (err) => {
+					if (err) console.error("Error setting pulse range.");
+			});
+			this.pwm.setPulseRange(12, 0, 4095, (err) => {
+					if (err) console.error("Error setting pulse range.");
+			});
 		}
 		if (direction === 'down') {
-			displayTiltUpGpio.digitalWrite(0);
-			displayTiltDownGpio.digitalWrite(1);
+			this.pwm.setPulseRange(12, 0, 0, (err) => {
+					if (err) console.error("Error setting pulse range.");
+			});
+			this.pwm.setPulseRange(13, 0, 4095, (err) => {
+					if (err) console.error("Error setting pulse range.");
+			});
 		}
 		if (direction === 'stop') {
-			displayTiltUpGpio.digitalWrite(0);
-			displayTiltDownGpio.digitalWrite(0);
+			this.pwm.setPulseRange(12, 0, 0, (err) => {
+					if (err) console.error("Error setting pulse range.");
+			});
+			this.pwm.setPulseRange(13, 0, 0, (err) => {
+					if (err) console.error("Error setting pulse range.");
+			});
 		}
 	};
 
