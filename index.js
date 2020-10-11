@@ -46,8 +46,8 @@ const LedDriver = require('./led');
 			socket.broadcast.emit('message', 'Calibration complete.');
 		});
 
-		socket.on('control tilt', (data) => {
-			display.tilt(data.direction)
+		socket.on('control display', (data) => {
+			display.move(data.direction)
 		});
 
 		socket.on('control led', (data) => {

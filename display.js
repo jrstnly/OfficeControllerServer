@@ -86,14 +86,20 @@ class DisplayController {
 		this.stopMeasuringHeight();
 	};
 	move(direction) {
-		this.startMeasuringHeight();
 		if (direction === 'up') {
+			this.startMeasuringHeight();
 			displayUpGpio.digitalWrite(1);
 			displayDownGpio.digitalWrite(0);
 		}
 		if (direction === 'down') {
+			this.startMeasuringHeight();
 			displayUpGpio.digitalWrite(0);
 			displayDownGpio.digitalWrite(1);
+		}
+		if (direction === 'stop') {
+			displayUpGpio.digitalWrite(0);
+			displayDownGpio.digitalWrite(0);
+			this.stopMeasuringHeight();
 		}
 	};
 	tilt(direction) {
