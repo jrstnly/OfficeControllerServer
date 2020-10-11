@@ -40,8 +40,8 @@ class DisplayController {
 						resolve();
 					});
 				});
-
-				this.accelerometer = new Accelerometer({controller: "LIS3DH"});
+/*
+				this.accelerometer = new Accelerometer({controller: "LIS3DH", range: 16});
 				let oldX = 100;
 				let oldY = 100;
 				let oldZ = 100;
@@ -61,7 +61,7 @@ class DisplayController {
 					}
 
 				});
-
+*/
 				resolve(this);
 			});
 
