@@ -1,0 +1,12 @@
+[Unit]
+Description=Timestamp Service
+After=network.target
+
+[Service]
+WorkingDirectory=/var/local/OfficeControllerServer
+ExecStart=/usr/bin/node index.js
+Restart=on-failure
+User=root
+
+[Install]
+WantedBy=multi-user.target
